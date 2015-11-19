@@ -1,0 +1,51 @@
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h1>{{=title}}</h1>
+        </div>
+    </div>
+
+    {{if len(results) > 0:}}
+        <!-- Keep count of how many search results are already in a row -->
+        {{loop_increment = 0}}
+
+        {{for (i, result) in enumerate(results):}}
+            <!-- If count is 0, means starting a new row -->
+            {{if loop_increment == 0:}}
+                <div class="row">
+            {{pass}}
+            <div class="col-xs-3">
+                <div class="thumbnail">
+                    <a href="{{=URL('projects', 'view.html', vars=dict(project_id = result.projects.id))}}">
+                        {{if result.projects.image == None:}}
+                            <img src="http://placekitten.com/g/500/500" alt="result.projects.title">
+                        {{else:}}
+                            <img src="{{=URL('static', 'images', args=result.projects.image)}}" alt="{{=result.projects.title}}">
+                        {{pass}}
+                        <div class="caption">
+                            <h3>{{=result.projects.title}}</h3>
+                            <p class="text-muted">{{=result.project_categories.description}}</p>
+                            <p>{{=result.projects.short_description}}</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            {{if loop_increment == 3 or i == len(results)-1:}}
+                <!-- Close the row every 4th result, or if the last one has been reached -->
+                </div>
+                {{loop_increment = 0}}
+            {{else:}}
+                {{loop_increment += 1}}
+            {{pass}}
+        {{pass}}
+    {{else:}}
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Sorry, there aren't any projects at the moment :(</h2>
+                <h3>Why not <a href="{{=URL('projects', 'create.html')}}">create your own</a>?</h3>
+            </div>
+        </div>
+    {{pass}}
+</div>

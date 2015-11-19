@@ -1,0 +1,99 @@
+a {
+        cursor: pointer;
+  }
+
+.navbar-nav  li.active,
+.nav-pills-editor > .active {
+    border-bottom: 2px solid #CD2525;
+}
+
+.signup_info {
+        padding: 6px 12px;
+}
+
+.search_thumbnail {
+    height: 350px;
+    overflow: hidden;
+}
+
+.footer {
+    padding: 40px 0px;
+    margin-top: 40px;
+    border-top: 1px solid #EEE;
+}
+
+ul.account_details {
+    list-style: none;
+    display: inline;
+}
+
+.nav-pills-editor > li.active > a,
+.nav-pills-editor > li.active > a:hover,
+.nav-pills-editor > li.active > a:focus {
+    background-color: #EEE;
+    color: #337ab7;
+}
+
+.editor-section {
+    margin-top: 5px;
+    padding-top: 20px;
+    border-top: 1px solid #EEE;
+}
+
+#pledge_list {
+    list-style: none;
+}
+
+.pledge_text ~ .pledge_text,
+.user_address ~ .user_address,
+.user_cards ~ .user_cards {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid #EEE;
+}
+
+#change_status {
+    margin-top: 5px;
+}
+
+.discover_categories ~ .discover_categories {
+    margin-top: 15px;
+}
+
+.project_thumbnail {
+    line-height: 1.4;
+}
+
+.category_button:hover,
+.category_button:focus {
+    border: 1px solid #CD2525;
+}
+
+.signup_row {
+    border-top: 1px solid #EEE;
+    margin-top: 5px;
+    padding-top: 25px;
+}
+
+.caption h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#update_user,
+#new_card,
+#new_address {
+    display: none;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #EEE;
+}
+
+#change_billing_address,
+.account_birth_month {
+    margin: 15px 0px;
+}
+
+.bootings_title {
+    margin-bottom: 0px;
+}

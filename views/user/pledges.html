@@ -1,0 +1,51 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>My Pledges <small>Bootables you've helped</small></h1>
+    </div>
+</div>
+
+{{if len(pledges) == 0:}}
+    <div class="row">
+        <div class="col-xs-12">
+            You haven't pledged to any Bootables yet :(
+        </div>
+    </div>
+{{else:}}
+    <!-- Keep count of how many pledges have been placed each row -->
+    {{loop_increment = 0}}
+
+    {{for (index, pledge) in enumerate(pledges):}}
+        <!-- Create a new row -->
+        {{if loop_increment == 0:}}
+            <div class="row">
+        {{pass}}
+        <div class="col-xs-3">
+            <div class="thumbnail">
+                <a href="{{=URL('projects', 'view.html', vars=dict(project_id = pledge.projects.id))}}">
+                    <img src="{{=URL('static', 'images', args=pledge.projects.image)}}" alt="{{=pledge.projects.title}}">
+                    <div class="caption">
+                        <h3>{{=pledge.projects.title}}</h3>
+                        <p class="lead">Pledged: <strong>&pound;{{=pledge.pledges.value}}</strong> <br />{{=pledge.pledges.description}}</p>
+
+                        {{if len(additional_pledges[pledge.projects.id]) > 0:}}
+                            All rewards:
+                            <ul class="list-unstyled">
+                                {{for extra_pledge in additional_pledges[pledge.projects.id]:}}
+                                    <li class="text-muted">{{=extra_pledge.description}}</li>
+                                {{pass}}
+                            </ul>
+                        {{pass}}
+                        <p>&pound;{{=pledge.projects.total_funded}} <small>out of</small> &pound;{{=pledge.projects.funding_goal}}</p>
+                        <p><strong>{{=pledge.project_status.description}}</strong></p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        {{if loop_increment == 2 or index == len(pledges)-1:}}
+            <!-- Close the row every 3rd pledge or there are no more pledges -->
+            </div>
+        {{pass}}
+    {{pass}}
+{{pass}}

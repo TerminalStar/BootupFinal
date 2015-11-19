@@ -1,0 +1,175 @@
+{{extend 'layout.html'}}
+
+<div class="row">
+    <div class="col-xs-12">
+        <h1>
+            {{=project.projects.title}}
+            <small>{{=project.project_categories.description}}</small>
+
+            {{if has_pledged:}}
+                <div class="pull-right">
+                    <span class="label label-info">Pledged</span>
+                </div>
+            {{pass}}
+        </h1>
+    </div>
+</div>
+
+<!-- General alert for form feedback -->
+{{include 'default/feedback_form.html'}}
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="progress">
+            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{=funding_percent}}" aria-valuemin="0" aria-valuemax="100" style="width: 
+                {{if funding_percent >= 100:}}
+                    100%
+                {{else:}}
+                    {{=funding_percent}}%
+                {{pass}}
+                ;">
+                {{=funding_percent}}%
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-3">
+        <div class="row">
+            <div class="col-xs-12">
+                {{if project.projects.image == None:}}
+                    <img src="http://placekitten.com/g/500/500" class="img-thumbnail" alt="{{=project.projects.title}}">
+                {{else:}}
+                    <img src="{{=URL('static', 'images', args=project.projects.image)}}" class="img-thumbnail img-responsive" alt="{{=project.projects.title}}">
+                {{pass}}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="lead">&pound;{{=actual_funding}} <small>out of</small> &pound;{{=formatted_goal}}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="lead bootings_title">Bootings</p>
+                <p class="
+                    {{if rewards_stack:}}
+                        text-success
+                    {{else:}}
+                        text-danger
+                    {{pass}}
+                ">
+                    <span class="glyphicon 
+                        {{if rewards_stack:}}
+                            glyphicon-ok
+                        {{else:}}
+                            glyphicon-remove
+                        {{pass}}
+                    "></span> These rewards {{if not rewards_stack:}}don't{{pass}} stack
+                </p>
+                <ol id="pledge_list" class="list-unstyled"> 
+                    {{for pledge in pledges:}}
+                        <li class="pledge_text">
+                            <a><strong>&pound;{{=pledge.value}}</strong> {{=pledge.description}} <span class="pledge_id hidden">{{=pledge.id}}</span></a>
+                        </li>
+                    {{pass}}
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-6">
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="lead">{{=project.projects.short_description}}</p>
+                <p>{{=project.projects.long_description}}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="lead">Manager's Story</p>
+                <p>{{=project.projects.funding_reason}}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-3">
+        {{if has_pledged:}}
+            <p class="lead">Your Pledge</p>
+            <ul class="list-unstyled">
+                <li><strong>&pound;{{=pledge_made['pledges']['value']}}</strong> for:
+                    <ul>
+                        {{for reward in user_rewards:}}
+                            <li class="text-muted list-unstyled">{{=reward.description}}</li>
+                        {{pass}}
+                    </ul>
+                </li>
+            </ul>
+        {{pass}}
+
+        <p class="lead">Pledgers</p>
+        <ul class="list-unstyled" id="pledgers">
+            {{if len(pledgers) == 0:}}
+                <li>No one has pledged yet :(</li>
+            {{else:}}
+                {{for pledger in pledgers:}}
+                    <li>{{=pledger.auth_user.first_name}} ({{=pledger.auth_user.email}}) pledged <strong>&pound;{{=pledger.pledges.value}}</strong> to get:
+                        <ul>
+                            {{for reward in pledger_rewards[pledger.auth_user.id]:}}
+                                <li class="text-muted list-unstyled">{{=reward.description}}</li>
+                            {{pass}}
+                        </ul>
+                    </li>
+                {{pass}}
+            {{pass}}
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        var pledge_text   = $('.pledge_text'),
+            form_feedback = $('#form_feedback'),
+            has_pledged   = '{{=XML(has_pledged)}}' == 'False' ? false : true;
+
+        pledge_text.click(function()
+        {
+            if (has_pledged)
+            {
+               display_alert(form_feedback, 'You have already pledged to this Bootable', 'error');
+               return false;
+            }
+
+            {{if auth.is_logged_in():}}
+                var pledge    = $(this).closest('li'),
+                    pledge_id = parseInt(pledge.find('.pledge_id')[0].textContent);
+
+                if (typeof pledge_id !== 'number')
+                {
+                    return false;
+                }
+
+                var submit_pledge = {
+                    pledge_id: pledge_id
+                };
+                
+                $.ajax({
+                    url: '{{=URL('projects', 'submit_pledge')}}',
+                    data: submit_pledge,
+                    dataType: 'text',
+                    success: function(response)
+                    {
+                        window.location.reload()
+                    }
+                });
+            {{else:}}
+                window.location = '{{=URL('user', 'login.html')}}';
+            {{pass}}
+        });
+    });
+</script>

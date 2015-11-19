@@ -1,0 +1,297 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-xs-offset-2 col-xs-8">
+        <h1>Become a member of BootUp!</h1>
+    </div>
+</div>
+
+<!-- General form feedback alert -->
+{{include 'default/feedback_form.html'}}
+
+<div class="row">
+    <div class="col-xs-offset-2 col-xs-8">
+        <p class="lead">Personal Details</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-offset-2 col-xs-8">
+        <form role="form" class="form-horizontal" id="signup_form">
+            <div class="form-group">
+                <label for="signup_firstname" class="col-xs-2 control-label">First Name</label>
+                    <div class="col-xs-9">
+                        <input type="text" class="form-control signup_field" id="signup_first_name" placeholder="First Name" name="first_name">
+                    </div>    
+            </div>
+
+            <div class="form-group">
+                <label for="signup_lastname" class="col-xs-2 control-label">Last Name</label>
+                <div class="col-xs-9">
+                    <input type="text" class="form-control signup_field" id="signup_last_name" placeholder="Last Name" name="last_name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-xs-2 control-label">Birthday</label>
+                <div class="col-xs-3">
+                    <input type="text" class="form-control birth_input" id="birth_day" placeholder="01">
+                </div>
+                <div class="col-xs-3">
+                    <select class="form-control birth_input" id="birth_month">
+                        {{for month in all_months:}}
+                            <option value="{{=month[0]}}">{{=month[1]}}</option>
+                        {{pass}}
+                    </select>
+                </div>
+                <div class="col-xs-3">
+                    <input type="text" class="form-control birth_input" id="birth_year" placeholder="1990">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="signup_email" class="col-xs-2 control-label">Email</label>
+                <div class="col-xs-9">
+                    <input type="email" class="form-control signup_field" id="signup_email" placeholder="Email" data-toggle="tooltip" data-placement="right" data-container="body" title="Your email address will be your username" name="email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="signup_password" class="col-xs-2 control-label">Password</label>
+                <div class="col-xs-9">
+                    <input type="password" class="form-control signup_field" id="signup_password" placeholder="Password" data-toggle="tooltip" data-placement="right" data-container="body" title="Your password must be at least 6 characters long" name="password">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{include 'user/address_form.html'}}
+{{include 'user/card_form.html'}}
+
+<div class="row">
+    <div class="col-xs-offset-5 col-xs-7">
+        <button type="button" id="submit_signup" class="btn btn-lg btn-success">Sign me up!</button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        // Initialise all tooltip elements
+        $('[data-toggle="tooltip"]').tooltip();
+
+        var form_fields   = $('.signup_field'),
+            card_expiry   = $('#card_expiry select'),
+            submit_signup = $('#submit_signup'),
+            form_feedback = $('#form_feedback');
+
+        form_fields.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        card_expiry.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        submit_signup.click(function()
+        {
+            var birthdate     = get_user_birthdate(),
+                card_expiry   = get_card_expiry(),
+                form_errors   = false,
+                submit_values = {};
+
+            if (birthdate == '')
+            {
+                $('#birth_day').parents('.form-group').addClass('has-error');
+                form_errors = true;
+            }
+
+            if (card_expiry == '')
+            {
+                $('#card_expiry').addClass('has-error');
+                form_errors = true;
+            }
+
+            form_fields.each(function()
+            {
+                var current_value      = $(this).val(),
+                    value_name         = $(this).attr('name'),
+                    current_form_group = $(this).parents('.form-group');
+
+                if (current_value.replace(/ /g, '') == '')
+                {
+                    current_form_group.addClass('has-error');
+
+                    if (!form_errors)
+                    {
+                        form_errors = true;
+                    }
+
+                    return true;
+                }
+
+                var validated = false;
+
+                switch (value_name)
+                {
+                    case 'security_code':
+                        validated = validate_security_code(current_value);
+                        break;
+                    case 'number':
+                        current_value = current_value.replace(/-/g, '');
+                        validated     = validate_card_number(current_value);
+                        break;
+                    case 'password':
+                        validated = validate_password(current_value);
+                        break;
+                    case 'post_code':
+                        validated = validate_post_code(current_value);
+                        break;
+                    default:
+                        validated = true;
+                        break;
+                }
+
+                if (!validated)
+                {
+                    current_form_group.addClass('has-error');
+                    form_errors = true;
+                    return true;
+                }
+                else
+                {
+                    submit_values[value_name] = current_value;
+                }
+            });
+
+            if (form_errors)
+            {
+                display_alert(form_feedback, 'There appears to be an error with the details you entered. Please check them and try again.', 'error');
+                return false;
+            }
+
+            submit_values['birthdate'] = birthdate;
+            submit_values['expiry']    = card_expiry;
+
+            $.ajax({
+                url: '{{=URL('user', 'confirm_signup')}}',
+                data: submit_values,
+                success: function(response)
+                {
+                    if (response === 'False')
+                    {
+                        display_alert(form_feedback, 'Something went wrong! Please try again.', 'error');
+                        return false;
+                    }
+                    else
+                    {
+                        window.location = '{{=URL('user', 'account.html')}}';
+                    }
+                }
+            });
+        });
+
+                
+        var password_input   = $('#signup_password'),
+            password_info    = $('#password_info'),
+            email_input      = $('#signup_email'),
+            first_name_input = $('#signup_first_name'),
+            last_name_input  = $('#signup_last_name'),
+            birth_input      = $('.birth_input'),
+            form_feedback    = $('#form_feedback'),
+            feedback_text    = form_feedback.find('p');
+
+        first_name_input.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        last_name_input.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        birth_input.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+                
+        password_input.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+
+            password_info.slideDown();
+        });
+
+        email_input.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+    });
+
+    // Format the 3 birth date input fields to be YYYY-MM-DD
+    function get_user_birthdate()
+    {
+        var birth_day   = $('#birth_day').val(),
+            birth_month = $('#birth_month').val(),
+            birth_year  = $('#birth_year').val();
+
+        return format_date(birth_year, birth_month, birth_day);
+    }
+
+    // Validate card expiry and return empty string if it's invalid
+    // Returns YYYY-MM-DD format if valid
+    function get_card_expiry()
+    {
+        var expiry_month = $('#expiry_month').val(),
+            expiry_year  = $('#expiry_year').val(),
+            full_year    = '20' + expiry_year,
+            now          = new Date(),
+            expiry       = new Date(full_year, expiry_month, 0);
+
+        if (expiry.getTime() < now.getTime())
+        {
+            // Date in past
+            return '';
+        }
+
+        return expiry.getFullYear().toString() + '-' + (expiry.getMonth() + 1).toString() + '-' + expiry.getDate().toString(); 
+    }
+</script>

@@ -1,0 +1,407 @@
+{{extend 'layout.html'}}
+
+{{if not editable:}}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="alert alert-warning">This Bootable isn't editable</div>
+        </div>
+    </div>
+{{else:}}
+
+<div class="row">
+    <div class="col-xs-12">
+        <h1>{{=project.title}} <small>Edit information about your Bootable</small></h1>
+    </div>
+</div>
+
+<!-- Have alert for form feedback -->
+{{include 'default/feedback_form.html'}}
+
+<div class="row">
+    <div class="col-xs-2">
+        <button type="submit" form="create_form" class="btn btn-success">Save</button>
+    </div>
+    <div class="col-xs-2">
+        <button type="button" class="btn btn-success" id="publish_project">Open</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-offset-1 col-xs-11">
+        <h2 id="details">Details</h2>
+
+        <!-- Bootable editing form -->
+        <form role="form" id="create_form" class="form-horizontal" action="{{=URL('projects', 'update_project')}}">
+            <div class="form-group">
+                <label for="project_description" class="col-xs-2 control-label">Description</label>
+                <div class="col-xs-10">
+                    <input type="text" id="project_description" class="form-control project_field" placeholder="What will your Bootable do?" name="short_description">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="project_category" class="col-xs-2 control-label">Category</label>
+                <div class="col-xs-10">
+                    <select id="project_category" class="form-control project_field" autocomplete="off" name="category_id">
+                        {{for category in categories:}}
+                            <option value="{{=category.id}}"
+                                {{if category.id == project.category_id:}}
+                                    selected
+                                {{pass}}
+                            >{{=category.description}}</option>
+                        {{pass}}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">    
+                <label for="project_goal" class="col-xs-2 control-label">Funding Goal</label>
+                <div class="col-xs-10">
+                    <div class="input-group">
+                        <span class="input-group-addon">&pound;</span>
+                        <input type="text" id="project_goal" class="form-control project_field" placeholder="0.00" name="funding_goal">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="project_image" class="col-xs-2 control-label">Image</label>
+                <div class="col-xs-10">
+                    <input type="file" accept="image/*" id="project_image" class="project_field" name="image" data-toggle="tooltip" data-placement="right" title="1024 x 768 or less">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="project_long_desc" class="col-xs-2 control-label">Long Description</label>
+                <div class="col-xs-10">
+                    <textarea rows="3" spellcheck="true" id="project_long_desc" class="form-control project_field" placeholder="Long description of your Bootable!" name="long_description">
+                    </textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="project_story" class="col-xs-2 control-label">Your Story</label>
+                <div class="col-xs-10">
+                    <textarea rows="3" spellcheck="true" id="project_story" class="form-control project_field" placeholder="What's your story? Why do you want this Bootable funded?" name="funding_reason"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="stackable_pledges" class="col-xs-2 control-label">Stack Pledges</label>
+                <div class="col-xs-10">
+                    <input type="checkbox" id="stackable_pledges" class="project_field" name="include_lower_pledges" data-toggle="tooltip" data-placement="right" title="Include rewards for lower pledges in all higher pledges" value="1">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row editor-section">
+    <div class="col-xs-offset-1 col-xs-11">
+        <h2 id="pledges">Pledges</h2>
+
+        <!-- Add pledge form -->
+        <form role="form" id="pledge_form" class="form-horizontal" action="{{=URL('projects', 'add_pledge')}}">
+            <div class="form-group">
+                <label for="pledge_amount" class="col-xs-2 control-label">Pledge Amount</label>
+                <div class="col-xs-10">
+                    <div class="input-group">
+                        <span class="input-group-addon">&pound;</span>
+                        <input type="text" id="pledge_amount" class="form-control" placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="pledge_description" class="col-xs-2 control-label">Pledge Description</label>
+                <div class="col-xs-10">
+                    <input type="text" id="pledge_description" class="form-control" placeholder="What do backers get with this pledge?">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-offset-2 col-xs-10">
+                    <button type="submit" class="btn btn-success" form="pledge_form">Add</button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-hover" id="existing_pledges">
+            <thead>
+                <tr>
+                    <th>Pledge Amount</th>
+                    <th>Pledge Description</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{if len(pledges) > 0:}}
+                    {{for pledge in pledges:}}
+                        <tr>
+                            <td>&pound;{{=pledge.value}}
+                                <span style="display: none;" class="pledge_id">{{=pledge.id}}</span>
+                            </td>
+                            <td>{{=pledge.description}}</td>
+                            <td>
+                                <button type="button" class="btn btn-danger delete_pledge"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+                            </td>
+                        </tr>
+                    {{pass}}
+                {{else:}}
+                    <tr colspan="2">
+                        <td>When you add pledges, they will appear here!</td>
+                    </tr>
+                {{pass}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        $('[data-toggle="tooltip"]').tooltip();
+
+        var save_button   = $('#save_project'),
+            add_pledge    = $('#pledge_form'),
+            open_button   = $('#publish_project'),
+            create_form   = $('#create_form'),
+            form_feedback = $('#form_feedback');
+
+        open_button.click(function()
+        {
+            var project_id = {{=XML(response.json(project.id))}};
+
+            $.ajax({
+                url: '{{=URL('projects', 'publish_project')}}',
+                data: {
+                    project_id: project_id
+                },
+                dataType: 'text',
+                success: function(response)
+                {
+                    if (response == 'None')
+                    {
+                        display_alert(form_feedback, 'Failed to publish Bootable, please try again.', 'error');
+
+                        return false;
+                    }
+                   
+                   window.location = '{{=URL('projects', 'view.html', vars=dict(project_id=project.id))}}';
+                }
+            });
+
+            return false;
+        });
+
+
+        create_form.submit(function(event)
+        {
+            var project_fields   = $('.project_field'),
+                submit_values    = {},
+                value_count      = 0,
+                current_category = {{=XML(response.json(project.category_id))}},
+                project_id       = {{=XML(response.json(project.id))}},
+                form_action      = $(this).attr('action');
+
+            project_fields.each(function()
+            {
+                var input_name  = $(this).attr('name'),
+                    input_value = $(this).val();
+
+                if (input_name === 'category_id' && parseInt(input_value) === parseInt(current_category))
+                {
+                    // Category id is special case
+                    // The select will always have a value, this may be the current category
+                    // Don't want to bother updating if it's the same
+                    return true;
+                }
+
+                if (input_name == 'include_lower_pledges')
+                {
+                    input_value = $(this).prop('checked');
+                }
+
+                if (!input_value && input_name != 'include_lower_pledges')
+                {
+                    return true;
+                }
+
+                if (input_name == 'image')
+                {
+                    // Image upload has to be done separately
+                    upload_project_image();
+
+                    // Strip whitespace as we don't want name string to have encoding issues
+                    input_value = input_value.replace(/ /g, '');
+                }
+
+                submit_values[input_name] = input_value;
+
+                ++value_count;
+            });
+
+            if (value_count === 0)
+            {
+                return false;
+            }
+
+            submit_values['project_id'] = project_id;
+
+            $.ajax({
+                url: form_action,
+                data: submit_values,
+                dataType: 'text',
+                success: function(response)
+                {
+                    if (response === 'None')
+                    {
+                        display_alert(form_feedback, 'Your Bootable couldn\'t be updated. Please try again', 'error');
+                    }
+                    else
+                    {
+                        display_alert(form_feedback, 'Your changes have been saved!', 'success');
+                    }
+                }
+            });
+
+            return false;
+
+        });
+
+        $('#pledge_amount').focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        $('#pledge_description').focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        add_pledge.submit(function()
+        {
+            var pledge_value       = $('#pledge_amount'),
+                pledge_description = $('#pledge_description'),
+                form_action        = add_pledge.attr('action'),
+                initial_count      = {{=XML(response.json(len(pledges)))}},
+                form_errors        = false,
+                submit_values      = {
+                    value: pledge_value.val(),
+                    description: pledge_description.val(),
+                    project_id: {{=XML(response.json(project.id))}}
+                };
+
+            if (!submit_values.value)
+            {
+                pledge_value.parents('.form-group').addClass('has-error');
+                form_errors = true;
+            }
+
+            if (!submit_values.description)
+            {
+                pledge_description.parents('.form-group').addClass('has-error');
+                form_errors = true;
+            }
+
+            if (form_errors)
+            {
+                return false;
+            }
+
+            $.ajax({
+                url: form_action,
+                data: submit_values,
+                dataType: 'text',
+                success: function(response)
+                {
+                    if (response == 'None')
+                    {
+                        display_alert(form_feedback, 'Pledge couldn\'t be added, please try again.', 'error');
+                    }
+                    else
+                    {
+                        display_alert(form_feedback, 'Pledge added!', 'success');
+                    }
+
+                    var pledge_table_row = $('#existing_pledges > tbody:last');
+
+                    pledge_table_row.append('<tr><td>&pound' + submit_values.value + '<span style="display: none;" class="pledge_id">' + response + '</span></td><td>' + submit_values.description + '</td><td><button type="button" class="btn btn-danger delete_pledge"><span class="glyphicon glyphicon-remove"></span> Delete</button></td></tr>');
+
+                    pledge_value.val('');
+                    pledge_description.val('');
+                }
+            });
+
+            return false;
+        });
+
+        // Below is delegated as when pledges are created, they are dynamically added to the page
+        $('#existing_pledges tbody').on('click', '.delete_pledge', function()
+        {
+            var pledge_row = $(this).parent().parent();
+                pledge_id  = parseInt(pledge_row.find('.pledge_id')[0].textContent);
+
+            $.ajax({
+                url: '{{=URL('projects', 'delete_pledge')}}',
+                data: {
+                    pledge_id: pledge_id
+                },
+                dataType: 'text',
+                success: function(response)
+                {
+                    if (response == 'None')
+                    {
+                        //Error, couldn't be deleted
+                        return false;
+                    }
+                    
+                    pledge_row.remove();
+                }
+            });
+        });
+            
+    });
+
+    // Save a Bootable image to file. Kept separate as we have to use FormData() and only want to submit image data.
+    function upload_project_image()
+    {
+        var image_field = $('#project_image'),
+            file        = image_field[0].files[0],
+            image_file  = new FormData();
+            
+        image_file.append('image', file, file.name);
+
+        $.ajax({
+            url: '{{=URL('projects', 'upload_image')}}',
+            type: 'POST',
+            data: image_file,
+            processData: false,
+            contentType: false,
+            success: function(response)
+            {
+                if (response)
+                {
+                    display_alert(form_feedback, 'Your image was uploaded successfully!', 'success');
+                }
+                else
+                {
+                    display_alert(form_feedback, 'Something went wrong trying to upload your image.', 'error');
+                }
+            }
+        });
+
+        return;
+    }
+</script>
+{{pass}}

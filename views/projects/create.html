@@ -1,0 +1,94 @@
+{{extend 'layout.html'}}
+
+<div class="row">
+    <div class="col-xs-12">
+        <h1>Create Your Own Bootable</h1>
+    </div>
+</div>
+
+<!-- Include alert to give feedback about form -->
+{{include 'default/feedback_form.html'}}
+
+<div class="row">
+    <div class="col-xs-12">
+        <form role="form" id="create_form" class="form-horizontal">
+            <div class="form-group">
+                <label for="project_title" class="col-xs-2 control-label">Title</label>
+                <div class="col-xs-9"><!--col-lg-4?-->
+                    <input type="text" id="project_title" class="form-control" placeholder="Bootable Title">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="project_category" class="col-xs-2 control-label">Category</label>
+                <div class="col-xs-9">
+                    <select id="project_category" class="form-control">
+                        {{for category in categories:}}
+                            <option value="{{=category.id}}">{{=category.description}}</option>
+                        {{pass}}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="create_button" class="btn btn-success">Let's get started!</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        var creation_form    = $('#create_form'),
+            project_category = $('#project_category'),
+            project_title    = $('#project_title'),
+            form_feedback    = $('#form_feedback'),
+            feedback_text    = form_feedback.find('p');
+    
+        creation_form.submit(function(event)
+        {
+            var title_value    = project_title.val(),
+                category_value = project_category.val();
+
+            if (!title_value)
+            {
+                form_feedback.addClass('alert-danger');
+                feedback_text.append('<span class="glyphicon glyphicon-remove"></span> Please enter a title.');
+
+                form_feedback.slideDown(500).delay(2000).slideUp(500, function()
+                {
+                    feedback_text.empty();
+                    form_feedback.removeClass('alert-danger');
+                });
+
+                return false;
+            }
+
+            $.ajax({
+                url: '{{=URL('projects', 'create_new')}}',
+                data: {
+                title: project_title.val(),
+                category: project_category.val()
+                },
+                dataType: 'text',
+                success: function(response)
+                {
+                    if (response == 'False')
+                    {
+                        // Display error alert
+                        display_alert(form_feedback, 'Sorry, something went wrong. Please try again.', 'error');
+                        return false;
+                    }
+
+                    // Returned redirect url to edit project
+                    window.location = response;
+                }
+            });
+
+            return false;
+        });
+    });
+</script>

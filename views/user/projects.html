@@ -1,0 +1,150 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>My Bootables <small>Bootables you manage</small></h1>
+    </div>
+</div>
+
+{{if len(projects) == 0:}}
+    <div class="row">
+        <div class="col-xs-12">
+            You haven't made any Bootables yet :(
+        </div>
+    </div>
+{{else:}}
+    <!-- Keep count of how many projects each row -->
+    {{loop_increment = 0}}
+
+    {{for (index, project) in enumerate(projects):}}
+        <!-- If the first in a row, create a new row -->
+        {{if loop_increment == 0:}}
+            <div class="row">
+        {{pass}}
+        <div class="col-xs-3">
+            <div class="thumbnail">
+                <a href="{{=URL('projects', 'view.html', vars=dict(project_id = project.projects.id))}}">
+                    <img src="{{=URL('static', 'images', args=project.projects.image)}}" alt="{{=project.projects.title}}">
+                    <div class="caption">
+                        {{if project.project_status.name == 'open':}}
+                            <p class="lead">&pound;{{=project.formatted_funding}} <small>out of </small> &pound;{{=project.formatted_goal}}</p>
+                        {{pass}}
+
+                        <h3>{{=project.projects.title}}</h3>
+                        <p>{{=project.projects.short_description}}</p>
+                        <strong><span class="status_description">{{=project.project_status.description}}</span></strong>
+                    </div>
+                </a>
+
+                <div class="row">
+                    <div class="col-xs-4">
+                        <a href="{{=URL('projects', 'editor.html', vars=dict(project_id=project.projects.id))}}" id="edit_project" class="btn btn-success pull-right
+                            {{if project.project_status.name != 'not_avail':}}disabled{{pass}}
+                        ">Edit
+                        </a>
+                    </div>
+                    <div class="col-xs-4 alter_project">
+                        {{if project.project_status.name == 'not_avail' or project.project_status.name == 'not_funded':}}
+                            <button type="button" class="btn btn-success pull-left open_project" value="{{=project.projects.id}}">Open</button>
+                        {{else:}}
+                            <button type="button" class="btn btn-danger pull-left close_project" value="{{=project.projects.id}}">Close</button>
+                        {{pass}}
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="button" class="btn btn-danger delete_project
+                            {{if project.project_status.name == 'open':}}disabled{{pass}}
+                        " value="{{=project.projects.id}}">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{if loop_increment == 3 or index == len(projects)-1:}}
+            <!-- Close row every 4th project or if there are no more -->
+            </div>
+            {{loop_increment = 0}}
+        {{else:}}
+            {{loop_increment += 1}}
+        {{pass}}
+    {{pass}}
+{{pass}}
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        var close_project  = $('.close_project'),
+            open_project   = $('.open_project'),
+            alter_project  = $('.alter_project'),
+            delete_project = $('.delete_project');
+
+        alter_project.on('click', '.close_project', function()
+        {
+            var project_id  = $(this).val(),
+                this_button = $(this);
+
+            $.ajax({
+                url: '{{=URL('projects', 'close_project')}}',
+                data: {
+                    project_id: project_id
+                },
+                success: function(response)
+                {
+                    var data = $.parseJSON(response);
+
+                    if (!data.result)
+                    {
+                        return false;
+                    }
+
+                    window.location.reload();
+                }
+            });
+        });
+
+        alter_project.on('click', '.open_project', function()
+        {   
+            var project_id  = $(this).val(),
+                this_button = $(this);
+
+            $.ajax({
+                url: '{{=URL('projects', 'open_project')}}',
+                data: {
+                    project_id: project_id
+                },
+                success: function(response)
+                {
+                    var data = $.parseJSON(response);
+
+                    if (!data.result)
+                    {
+                        return false;
+                    }
+                    
+                    window.location.reload();
+                }
+            });
+        });
+
+        delete_project.click(function()
+        {
+            var project_id = $(this).val();
+
+            $.ajax({
+                url: '{{=URL('user', 'delete_project')}}',
+                data: {
+                    project_id: project_id
+                },
+                success: function(response)
+                {
+                    var data = $.parseJSON(response);
+
+                    if (!data.result)
+                    {
+                        return false;
+                    }
+
+                    window.location.reload();
+                }
+            });
+        });
+    });
+</script>

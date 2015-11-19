@@ -1,0 +1,39 @@
+{{extend 'layout.html'}}
+
+<div class="row">
+    <div class="col-xs-12">
+        <h1>Discover Bootables <small>By category</small></h1>
+    </div>
+</div>
+
+<!-- Keep count of how many categories have been looped through -->
+{{loop_increment = 0}}
+
+{{for (index, category) in enumerate(categories):}}
+    <!-- If loop_increment reset, start a new row -->
+    {{if loop_increment == 0:}}
+        <div class="row discover_categories">
+    {{pass}}
+        <div class="col-xs-4">
+            <div class="btn-group btn-group-justified">
+                <div class="btn-group" role="group">
+                    <a class="btn btn-default btn-lg category_button" href="{{=URL('projects', 'search.html', vars=dict(category = category.description))}}">
+                        <p class="lead">{{=category.description}}</p>
+                        <p>{{=category.project_count}}
+                            {{if category.project_count == 1:}} Bootable
+                            {{else:}} Bootables
+                            {{pass}}
+                        </p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    {{if loop_increment == 2 or index == len(categories)-1:}}
+        <!-- If we have been through 3 categories, close the current row and reset the counter to start a new one -->
+        </div>
+        {{loop_increment = 0}}
+    {{else:}}
+        {{loop_increment += 1}}
+    {{pass}}
+{{pass}}

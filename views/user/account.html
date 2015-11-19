@@ -1,0 +1,638 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>My Account</h1>
+    </div>
+</div>
+
+<!-- General form feedback alert -->
+{{include 'default/feedback_form.html'}}
+
+<div class="row">
+    <div class="col-xs-4">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>You</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p><strong>Username</strong> {{=auth.user.email}}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p><strong>First Name</strong> {{=auth.user.first_name}}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p><strong>Last Name</strong> {{=auth.user.last_name}}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p><strong>Birthday</strong> {{=auth.user.birthdate.strftime('%d/%m/%Y')}} (Age {{=user_age}})</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <button type="button" class="btn btn-success" id="edit_user">Edit</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <form role="form" id="update_user" class="form-horizontal" action="{{=URL('user', 'update_user')}}">
+                    <div class="form-group">
+                        <label for="update_first_name" class="col-xs-4 control-label">First Name</label>
+                        <div class="col-xs-8">
+                            <input type="text" id="update_first_name" class="form-control edit_user_field" name="first_name" placeholder="{{=auth.user.first_name}}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="update_last_name" class="col-xs-4 control-label">Last Name</label>
+                        <div class="col-xs-8">
+                            <input type="text" id="update_last_name" class="form-control edit_user_field" name="last_name" placeholder="{{=auth.user.last_name}}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Birthday</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control birth_input" id="birth_day" placeholder="{{=auth.user.birthdate.strftime('%d')}}">
+                            <select class="form-control birth_input account_birth_month" id="birth_month"> 
+                                {{for month in all_months:}}
+                                    <option value="{{=month[0]}}"
+                                        {{if month[0] == int(auth.user.birthdate.strftime('%m')):}}
+                                            selected
+                                        {{pass}}
+                                    >{{=month[1]}}</option>
+                                {{pass}}
+                            </select>
+                            <input type="text" class="form-control birth_input" id="birth_year" placeholder="{{=auth.user.birthdate.strftime('%Y')}}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-xs-offset-4 col-xs-8">
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-4">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Addresses</h2>
+            </div>
+        </div>
+        {{if len(addresses) == 0:}}
+            <div class="row">
+                <div class="col-xs-12">
+                    You don't have any addresses!
+                </div>
+            </div>
+        {{else:}}
+            {{for address in addresses:}}
+                <div class="user_address">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            {{=address.street_address}}, {{=address.city}},
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            {{=address.country}}, {{=address.post_code}},
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <p><strong>Is billing?</strong>
+                                {{if address.billing_address:}}
+                                    Yes
+                                {{else:}}
+                                    No
+                                {{pass}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {{pass}}
+        {{pass}}
+
+        <div class="row">
+            <div class="col-xs-12">
+                <button type="button" id="add_address" class="btn btn-success">Add</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <form role="form" class="form-horizontal" id="new_address">
+                    <div class="form-group">
+                        <label for="address_street" class="col-xs-4 control-label">Street</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control address_field" id="address_street" placeholder="Street" name="street_address">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address_city" class="col-xs-4 control-label">Town/City</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control address_field" id="address_city" placeholder="City" name="city">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address_country" class="col-xs-4 control-label">Country</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control address_field" id="address_country" placeholder="Country" name="country">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address_postcode" class="col-xs-4 control-label">Post Code</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control address_field" id="address_postcode" placeholder="Post Code" name="post_code">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address_billable" class="col-xs-4 control-label">Billing?</label>
+                        <div class="col-xs-8">
+                            <input type="checkbox" id="address_billable" name="billing_address" value="is_billing">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-xs-offset-4 col-xs-8">
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-4">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Payment Cards</h2>
+            </div>
+        </div>
+
+        {{if len(credit_cards) == 0:}}
+            <div class="row">
+                You don't have any payment cards!
+            </div>
+        {{else:}}
+            {{for card in credit_cards:}}
+                <div class="user_cards">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <p><strong>Number</strong> {{=card.number}}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <p><strong>Security Code</strong> {{=card.security_code}}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <p><strong>Expires</strong> {{=card.formatted_expiry}}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <select class="form-control" id="change_billing_address">
+                                {{for address in billing_addresses:}}
+                                    <option value="{{=address.id}}"
+                                        {{if address.id == card.billing_address_id:}}
+                                            selected
+                                        {{pass}}
+                                    >{{=address.street_address}}, {{=address.city}}, {{=address.country}}, {{=address.post_code}}</option>
+                                {{pass}}
+                            </select>
+                            <span class="hidden card_id">{{=card.id}}</span>
+                        </div>
+                    </div>
+                </div>
+            {{pass}}
+        {{pass}}
+
+        <div class="row">
+            <div class="col-xs-12">
+                <button type="button" id="add_card" class="btn btn-success">Add</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <form role="form" class="form-horizontal" id="new_card">
+                    <div class="form-group">
+                        <label for="card_number" class="col-xs-4 control-label">Number</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="card_number" placeholder="Number" name="number">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card_pin" class="col-xs-4 control-label">Security Code</label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="card_pin" placeholder="PIN" name="security_code">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="card_expiry">
+                        <label class="col-xs-4 control-label">Expiry</label>
+                        <div class="col-xs-4">
+                            <select id="expiry_month" class="form-control">
+                                {{for month in all_months:}}
+                                    <option value="{{=month[0]}}">{{=month[0]}}</option>
+                                {{pass}}
+                            </select>
+                        </div>
+                        <div class="col-xs-4">
+                            <select id="expiry_year" class="form-control">
+                                {{for year in all_years:}}
+                                    <option value="{{=year}}">{{=year}}</option>
+                                {{pass}}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card_billing_address" class="col-xs-4 control-label">Address</label>
+                        <div class="col-xs-8">
+                            <select class="form-control" id="card_billing_address">
+                                {{for address in billing_addresses:}}
+                                    <option value="{{=address.id}}">{{=address.street_address}}, {{=address.city}}, {{=address.country}}, {{=address.post_code}}</option>
+                                {{pass}}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-xs-offset-4 col-xs-8">
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        var edit_user        = $('#edit_user'),
+            edit_user_form   = $('#update_user'),
+            edit_user_fields = $('.edit_user_field'),
+            add_address      = $('#add_address'),
+            add_address_form = $('#new_address'),
+            add_card         = $('#add_card'),
+            add_card_form    = $('#new_card'),
+            change_billing   = $('#change_billing_address'),
+            form_feedback    = $('#form_feedback'),
+            birthday_fields  = $('.birth_input');
+
+        edit_user.click(function()
+        {
+            if (edit_user_form.is(':visible'))
+            {
+                // Already showing edit form
+                return false;
+            }
+
+            edit_user_form.slideDown();
+        });
+
+        add_card.click(function()
+        {
+            if (add_card_form.is(':visible'))
+            {
+                // Already have a new card form displayed
+                return false;
+            }
+
+            add_card_form.slideDown();
+        });
+
+        add_address.click(function()
+        {
+            if (add_address_form.is(':visible'))
+            {
+                // Already have new address form displayed
+                return false;
+            }
+
+            add_address_form.slideDown();
+        });
+
+        birthday_fields.focus(function()
+        {
+            // Allow removal of error class no matter which of the three birthday input fields are in focus
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        change_billing.change(function()
+        {
+            var new_address_id = $(this).val(),
+                card_id        = parseInt($(this).next('span.card_id')[0].textContent);
+
+            $.ajax({
+                url: '{{=URL('user', 'update_billing_address')}}',
+                data: {
+                    address_id: new_address_id,
+                    card_id: card_id
+                },
+                success: function(response)
+                {
+                    if (!response)
+                    {
+                        display_alert(form_feedback, 'Your billing address couldn\'t be updated.', 'error');
+                        return false;
+                    }
+
+                    display_alert(form_feedback, 'Your billing address has been updated!', 'success');
+                    return true;
+                }
+            });
+        });
+
+        edit_user_form.submit(function(event)
+        {   
+            event.preventDefault();
+
+            var birthdate     = get_user_birthdate(),
+                submit_values = {},
+                updates       = 0;
+
+            if (birthdate !== '')
+            {
+                submit_values['birthdate'] = birthdate;
+                ++updates;
+            }
+            else
+            {
+                var form_group = $('#birth_day').parents('.form-group');
+
+                form_group.addClass('has-error');
+                return false;
+            }
+
+            edit_user_fields.each(function()
+            {
+                var current_value = $(this).val(),
+                    current_field = $(this).attr('name');
+
+                if (!current_value.replace(/ /g, ''))
+                {
+                    // Ignore, assume they don't want to update
+                    return true;
+                }
+
+                submit_values[current_field] = current_value;
+                ++updates;
+            });
+
+            if (updates === 0)
+            {
+                // Assume they don't want to update anything and clicked in error
+                $(this).slideUp();
+                return false;
+            }
+
+            $.ajax({
+                url: '{{=URL('user', 'update_user')}}',
+                data: submit_values,
+                dataType: 'json',
+                success: function(response)
+                {
+                    if (!response.result)
+                    {
+                        display_alert(form_feedback, 'Your information couldn\'t be updated, please try again.', 'error');
+                        return false;
+                    }
+
+                    location.reload();
+                }
+            });
+
+            return false;
+        });
+     
+        add_address_form.submit(function(event)
+        {
+            event.preventDefault();
+            
+            var address_fields = $('.address_field')
+                is_billing     = $('#address_billable').prop('checked'),
+                submit_values  = {},
+                form_error     = false;
+
+            address_fields.each(function()
+            {
+                var current_value = $(this).val(),
+                    field_name    = $(this).attr('name'),
+                    form_group    = $(this).parents('.form-group');
+
+                if (current_value.replace(/ /g, '') == '')
+                {
+                    form_group.addClass('has-error');
+                    
+                    if (!form_error)
+                    {
+                        form_error = true;
+                    }
+
+                    return true;
+                }
+
+                if (field_name == 'post_code' && !validate_post_code(current_value))
+                {
+                    form_group.addClass('has-error');
+                    form_error = true;
+                    return true;
+                }
+
+                submit_values[field_name] = current_value;
+            });
+
+            if (form_error)
+            {
+                return false;
+            }
+
+            submit_values['billing_address'] = is_billing;
+
+            $.ajax({
+                url: '{{=URL('user', 'add_address')}}',
+                data: submit_values,
+                success: function(response)
+                {
+                    if (!response)
+                    {
+                        display_alert(form_feedback, 'Your address couldn\'t be updated, please try again.', 'error');
+                        return false;
+                    }
+
+                    location.reload();
+                }
+            });
+                        
+            return false;
+                    
+        });
+
+        var card_expiry = $('#card_expiry select'),
+            card_number = $('#card_number'),
+            card_code   = $('#card_pin');
+
+        card_expiry.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        card_number.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        card_code.focus(function()
+        {
+            var form_group = $(this).parents('.form-group');
+
+            if (form_group.hasClass('has-error'))
+            {
+                form_group.removeClass('has-error');
+            }
+        });
+
+        add_card_form.submit(function(event)
+        {
+            event.preventDefault();
+
+            var expiry_month  = $('#expiry_month').val(),
+                expiry_year   = $('#expiry_year').val(),
+                card_number   = $('#card_number').val(),
+                card_code     = $('#card_pin').val(),
+                form_error   = false,
+                submit_values = {};
+
+            submit_values['address_id'] = $('#card_billing_address').val();
+
+            card_expiry = format_card_expiry(expiry_year, expiry_month);
+
+            if (card_expiry == '')
+            {
+                $('#expiry_month').parents('.form-group').addClass('has-error');
+                form_error = true;
+            }
+            else
+            {
+                submit_values['expiry_date'] = card_expiry;
+            }
+
+            if (!validate_security_code(card_code))
+            {
+                $('#card_pin').parents('.form-group').addClass('has-error');
+                form_error = true;
+            }
+            else
+            {
+                submit_values['security_code'] = card_code;
+            }
+            
+            if (!validate_card_number(card_number))
+            {
+                $('#card_number').parents('.form-group').addClass('has-error');
+                form_error = true;
+            }
+            else
+            {
+                submit_values['number'] = card_number;
+            }
+
+            if (form_error)
+            {
+                return false;
+            }
+
+            $.ajax({
+                url: '{{=URL('user', 'add_card')}}',
+                data: submit_values,
+                success: function(response)
+                {
+                    if (!response)
+                    {
+                        display_alert(form_feedback, 'Your card couldn\'t be added.', 'error');
+                        return false;
+                    }
+                    
+                    location.reload();
+                }
+            });
+
+            return false;
+        });
+    });
+
+    // Get user's input birthdate formatted for use in database, i.e. YYYY-MM-DD
+    function get_user_birthdate()
+    {
+        var birth_day   = $('#birth_day').val(),
+            birth_month = $('#birth_month').val(),
+            birth_year  = $('#birth_year').val();
+
+        if ((birth_day.replace(/ /g, '') == '') && (birth_year.replace(/ /g, '') == '') && 
+            birth_month == parseInt({{=XML(response.json(auth.user.birthdate.strftime('%m')))}}))
+        {
+            // Not changed
+            return '';
+        }
+
+        if (birth_day.replace(/ /g, '') == '')
+        {
+            birth_day = $('#birth_day').attr('placeholder');
+        }
+
+        if (birth_year.replace(/ /g, '') == '')
+        {
+            birth_year = $('#birth_year').attr('placeholder');
+        }
+
+        return format_date(birth_year, birth_month, birth_day);
+    }
+</script>

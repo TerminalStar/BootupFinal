@@ -1,0 +1,119 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="jumbotron">
+            <h1>Welcome to BootUp!</h1>
+            <p>The internet's best crowdfunding project site</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <h3>Check out our most recent projects...</h3>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- Keep track of how many Bootables have been looped over -->
+        {{loop_increment = 0}}
+
+        {{for (index, project) in enumerate(most_recent):}}
+            <!-- Create a new row every time loop_increment is reset -->
+            {{if loop_increment == 0:}}
+                <div class="row">
+            {{pass}}
+
+            <div class="col-xs-4">
+                <a href="{{=URL('projects', 'view.html', vars=dict(project_id = project.projects.id))}}" class="thumbnail">
+                    <img src="{{=URL('static', 'images', args=project.projects.image)}}" alt="{{=project.projects.title}}">
+                    <div class="caption">
+                        <h3 class="project_thumbnail"><span class="label label-info">{{=project.project_categories.description}}</span> {{=project.projects.title}} </h3>
+                        <p class="lead">{{=project.projects.short_description}}</p>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{=project['percent_achieved']}}" aria-valuemin="0" aria-valuemax="100" style="width: {{=project['percent_achieved']}}%;">
+                                <span class="sr-only">{{=project['percent_achieved']}}% funded</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            {{if index == len(most_recent)-1:}}
+                <!-- If we have run out of Bootables (reached limit of 5), we want to pad out end of row with a link to category search -->
+                <div class="col-xs-4">
+                    <a href="{{=URL('projects', 'discover.html')}}" class="thumbnail">
+                        <img src="{{=URL('static', 'images/categories', args='Film.jpg')}}" alt="Search for more Bootables!">
+                        <div class="caption">
+                            <h3>Don't see anything you like?</h3>
+                            <p class="lead">Discover more Bootables here!</p>
+                        </div>
+                    </a>
+                </div>
+                </div>
+            {{elif loop_increment == 2:}}
+                <!-- Close off row every 3rd Bootable -->
+                </div>
+                {{loop_increment = 0}}
+            {{else:}}
+                {{loop_increment += 1}}
+            {{pass}}
+        {{pass}}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <h3>These projects are so close...</h3>
+    </div>
+</div>
+            
+<div class="row">
+    <div class="col-xs-12">
+        <!-- Keep track of how many Bootables have been looped over -->
+        {{loop_increment = 0}}
+                    
+        {{for (index, project) in enumerate(nearest_goal):}}
+            <!-- Create a new row every time loop_increment is reset -->
+            {{if loop_increment == 0:}}
+                <div class="row">
+            {{pass}}
+
+            <div class="col-xs-4">
+                <a href="{{=URL('projects', 'view.html', vars=dict(project_id = project.projects.id))}}" class="thumbnail">
+                    <img src="{{=URL('static', 'images', args=project.projects.image)}}" alt="{{=project.projects.title}}">
+                    <div class="caption">
+                        <h3 class="project_thumbnail"><span class="label label-info">{{=project.project_categories.description}}</span> {{=project.projects.title}} </h3>
+                        <p class="lead">{{=project.projects.short_description}}</p>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{=project['percent_achieved']}}" aria-valuemin="0" aria-valuemax="100" style="width: {{=project['percent_achieved']}}%;">
+                                <span class="sr-only">{{=project['percent_achieved']}}% funded</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            {{if index == len(most_recent)-1:}}
+                <!-- If we have run out of Bootables (reached limit of 5), we want to pad out end of row with a link to category search -->
+                <div class="col-xs-4">
+                    <a href="{{=URL('projects', 'discover.html')}}" class="thumbnail">
+                        <img src="{{=URL('static', 'images/categories', args='Film.jpg')}}" alt="Search for more Bootables!">
+                        <div class="caption">
+                            <h3>Don't see anything you like?</h3>
+                            <p class="lead">Discover more Bootables here!</p>
+                        </div>
+                    </a>
+                </div>
+                </div> <!-- close row -->
+            {{elif loop_increment == 2:}}
+                <!-- Close off row every 3rd Bootable -->
+                </div>
+                {{loop_increment = 0}}
+            {{else:}}
+                {{loop_increment += 1}}
+            {{pass}}
+        {{pass}}
+    </div>
+</div>

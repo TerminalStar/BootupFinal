@@ -1,0 +1,131 @@
+{{extend 'layout.html'}}
+<div class="row">
+    <div class="col-xs-offset-2 col-xs-8">
+        <h1>Log In</h1>
+    </div>
+</div>
+
+<!-- General form feedback alerts -->
+{{include 'default/feedback_form.html'}}
+
+<div class="row">
+    <div class="col-xs-offset-2 col-xs-8">
+        <form role="form" id="login_form" class="form-horizontal"> 
+            <div class="form-group">
+                <label for="login_email" class="col-xs-2 control-label">Email</label>
+                <div class="col-xs-9">
+                        <input type="email" id="login_email" class="form-control" placeholder="Email">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="login_password" class="col-xs-2 control-label">Password</label>
+                <div class="col-xs-9">
+                        <input type="password" id="login_password" class="form-control" placeholder="Password">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="login_button" class="btn btn-success">Log In</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var login_form     = $('#login_form'),
+        login_email    = $('#login_email'),
+        login_password = $('#login_password'),
+        login_error    = $('#form_feedback'),
+        feedback_text  = login_error.find('p');
+
+    login_email.focus(function()
+    {
+        var form_group = $(this).parents('.form-group');
+
+        if (form_group.hasClass('has-error'))
+        {
+            form_group.removeClass('has-error');
+        }
+    });
+
+    login_password.focus(function()
+    {
+        var form_group = $(this).parents('.form-group');
+
+        if (form_group.hasClass('has-error'))
+        {
+            form_group.removeClass('has-error');
+        }
+    });
+
+    login_form.submit(function()
+    {
+        var username = login_form.find('#login_email').val(),
+            password = login_form.find('#login_password').val();
+            
+        if (!username || !password)
+        {
+            var error_text = '';
+
+            if (!username)
+            {
+                var form_group = login_email.parents('.form-group');
+
+                form_group.addClass('has-error');
+                error_text += 'Missing <strong>email</strong>. ';
+            }
+
+            if (!password)
+            {
+                var form_group = login_password.parents('.form-group');
+
+                form_group.addClass('has-error');
+                error_text += 'Missing <strong>password</strong>. ';
+            }
+
+            error_text += 'Please fix and try again.';
+
+            login_error.addClass('alert-danger');
+            feedback_text.append('<span class="glyphicon glyphicon-remove"></span> ' + error_text);
+
+            login_error.slideDown(500).delay(2000).slideUp(500, function()
+            {
+                feedback_text.empty();
+                login_error.removeClass('alert-danger');
+            });
+
+            return false;
+        }
+
+        var login_details = {
+                username: username,
+                password: password
+            };
+
+        $.ajax({
+            url: '{{=URL('user', 'confirm_login')}}',
+            data: login_details,
+            success: function(response)
+            {
+                if (response === 'False')
+                {
+                    login_error.addClass('alert-danger');
+                    feedback_text.append('<span class="glyphicon glyphicon-remove"></span> Log in failed, please try again.');
+
+                    login_error.slideDown(500).delay(2000).slideUp(500, function()
+                    {
+                        feedback_text.empty();
+                        login_error.removeClass('alert-danger');
+                    });
+                    
+                    return false;
+                }
+
+                window.location = '{{=URL('user', 'account.html')}}';
+            }
+        });
+
+        return false;
+    });
+</script>
